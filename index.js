@@ -1,5 +1,6 @@
 const express = require('express');
 const { MongoClient } = require('mongodb');
+const ObjectId = require('mongodb').ObjectId;
 const cors = require('cors')
 require('dotenv').config();
 const app = express();
@@ -20,18 +21,34 @@ async function run() {
         const database = client.db('carMechanic');
         const servicesCollection = database.collection('services');
 
+// Get api 
+        app.get('/services', async (req, res) => {
+            const cursor = servicesCollection.find({})
+            const services = await cursor.toArray();
+            res.send(services)
+        })
+// Get single api 
+        app.get('/services/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const service = await servicesCollection.findOne(query)
+            res.json(service)
+        })
+
 // post api 
         app.post('/services', async (req, res) => {
             const service = req.body;
-        //     const service = {
-        //         "name": "ENGINE DIAGNOSTIC",
-        // "price": "300",
-        // "description": "Lorem ipsum dolor sit amet, consectetu radipisi cing elitBeatae autem aperiam nequ quaera molestias voluptatibus harum ametipsa.",
-        // "img": "https://i.ibb.co/dGDkr4v/1.jpg"
-        //     }
+     
             const result = await servicesCollection.insertOne(service)
-        //     console.log(result);
-            res.json(result);
+            // console.log(result);
+            res.json(result)
+        })
+        // Delete api 
+        app.delete('/services/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await servicesCollection.deleteOne(query)
+            res.json(result)
         })
     } finally {
         // await client.close();
